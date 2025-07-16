@@ -1,32 +1,36 @@
 import os
-os.environ['OPENAI_API_KEY'] = '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'
-
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain_openai import ChatOpenAI
+from langchain.chains import RetrievalQA
 
 # 1. List your PDF files
 pdf_paths = [
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\اللائحة التنفيذية لنظام الايجار التمويلي .pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\اللائحة التنفيذية لنظام التمويل العقاري .pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\اللائحة التنفيذية لنظام المدفوعات وخدماتها .pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\اللائحة التنفيذية لنظام المعلومات الائتمانية.pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\اللائحة التنفيذية لنظام مكافحة جرائم الإرهاب وتمويله.pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\اللائحة التنفيذية لنظام مكافحة غسل الأموال.pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\قواعد تطبيق أحكام نظام مراقبة البنوك.pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\نظام الايجار التمويلي .pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\نظام البنك المركزي السعودي.pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\نظام التمويل العقاري.pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\نظام المدفوعات وخدماتها .pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\نظام المعلومات الائتمانية .pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\نظام مراقبة البنوك .pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\نظام مراقبة شركات التمويل .pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\نظام معالجة المنشآت المالية المهمّة .pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\نظام مكافحة غسل الأموال.pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\نظام مكافحة جرائم الإرهاب وتمويله.pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\نظام النقد العربي السعودي.pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\اللائحة التنفيذية لنظام مراقبة شركات التمويل.pdf",
-    r"C:\Users\abode\PycharmProjects\pythonProject1\Retrieval-Augmented-Generation\SAMA_rulebook_dataset\لائحة تنظيم المقاصة النهائية وترتيبات الضمان المرتبطة بها.pdf"
+    "SAMA_rulebook_dataset/اللائحة التنفيذية لنظام الايجار التمويلي.pdf",
+    "SAMA_rulebook_dataset/اللائحة التنفيذية لنظام التمويل العقاري.pdf",
+    "SAMA_rulebook_dataset/اللائحة التنفيذية لنظام المدفوعات وخدماتها.pdf",
+    "SAMA_rulebook_dataset/اللائحة التنفيذية لنظام المعلومات الائتمانية.pdf",
+    "SAMA_rulebook_dataset/اللائحة التنفيذية لنظام مكافحة جرائم الإرهاب وتمويله.pdf",
+    "SAMA_rulebook_dataset/اللائحة التنفيذية لنظام مكافحة غسل الأموال.pdf",
+    "SAMA_rulebook_dataset/قواعد تطبيق أحكام نظام مراقبة البنوك.pdf",
+    "SAMA_rulebook_dataset/نظام الايجار التمويلي.pdf",
+    "SAMA_rulebook_dataset/نظام البنك المركزي السعودي.pdf",
+    "SAMA_rulebook_dataset/نظام التمويل العقاري.pdf",
+    "SAMA_rulebook_dataset/نظام المدفوعات وخدماتها.pdf",
+    "SAMA_rulebook_dataset/نظام المعلومات الائتمانية.pdf",
+    "SAMA_rulebook_dataset/نظام مراقبة البنوك.pdf",
+    "SAMA_rulebook_dataset/نظام مراقبة شركات التمويل.pdf",
+    "SAMA_rulebook_dataset/نظام معالجة المنشآت المالية المهمّة.pdf",
+    "SAMA_rulebook_dataset/نظام مكافحة غسل الأموال.pdf",
+    "SAMA_rulebook_dataset/نظام مكافحة جرائم الإرهاب وتمويله.pdf",
+    "SAMA_rulebook_dataset/نظام النقد العربي السعودي.pdf",
+    "SAMA_rulebook_dataset/اللائحة التنفيذية لنظام مراقبة شركات التمويل.pdf",
+    "SAMA_rulebook_dataset/لائحة تنظيم المقاصة النهائية وترتيبات الضمان المرتبطة بها.pdf"
 ]
 # 2. Load all PDFs using PyPDFLoader
-from langchain_community.document_loaders import PyPDFLoader
+
 
 all_docs = []
 for path in pdf_paths:
@@ -34,7 +38,7 @@ for path in pdf_paths:
     all_docs.extend(loader.load())
 
 # 3. Split into chunks
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+
 
 text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
     chunk_size=300, chunk_overlap=50
@@ -42,15 +46,13 @@ text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
 splits = text_splitter.split_documents(all_docs)
 
 # 4. Embed and index with Chroma
-from langchain_openai import OpenAIEmbeddings
-from langchain_community.vectorstores import Chroma
+
 
 vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())
 retriever = vectorstore.as_retriever()
 
 # 5. Build the RAG (retrieval + generation) chain
-from langchain_openai import ChatOpenAI
-from langchain.chains import RetrievalQA
+
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0.5)
 rag_chain = RetrievalQA.from_chain_type(
