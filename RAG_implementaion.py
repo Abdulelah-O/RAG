@@ -1,5 +1,5 @@
 import os
-os.environ['OPENAI_API_KEY'] = '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'
+os.environ['OPENAI_API_KEY'] = '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'
 
 
 # 1. List your PDF files
