@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SAMA RAG Chat</title>
+    <link rel="stylesheet" href="/static/static_style.css">
+    <style>
+        body {
+            background: #222;
+            color: #f4f4f4;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .center-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .logo-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .logo-img {
+            width: 180px;
+            height: auto;
+            object-fit: contain;
+            border-radius: 20px;
+            background: #fff;
+            box-shadow: 0 0 24px #0006;
+            padding: 10px;
+        }
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 24px;
+            font-weight: 600;
+            text-align: center;
+            color: #fff;
+            text-shadow: 1px 1px 0 #000a;
+        }
+        .chat-box {
+            background: #282828;
+            border-radius: 20px;
+            box-shadow: 0 2px 24px #0008;
+            padding: 16px 24px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            min-width: 420px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .input-row {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            gap: 8px;
+        }
+        input[type="text"] {
+            flex: 1;
+            background: #222;
+            color: #eee;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            padding: 12px;
+            font-size: 1.05rem;
+            outline: none;
+            direction: rtl;
+            text-align: right;
+        }
+        button {
+            background: #3b3b92;
+            color: #fff;
+            border: none;
+            border-radius: 8px 0 0 8px;
+            padding: 12px 18px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-left: 0;
+            direction: rtl;
+        }
+        button:hover {
+            background: #5050b2;
+        }
+        .result-section {
+            margin-top: 24px;
+            background: #282828;
+            border-radius: 12px;
+            padding: 18px;
+            color: #d2ffd2;
+            box-shadow: 0 1px 8px #0003;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .sources-section {
+            margin-top: 12px;
+            background: #262626;
+            border-radius: 10px;
+            padding: 12px;
+            color: #fff;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .source-item {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #4443;
+            padding-bottom: 8px;
+        }
+        .source-item:last-child {
+            border-bottom: none;
+        }
+        .source-title {
+            font-weight: bold;
+            color: #6fc2ff;
+        }
+        @media (max-width: 600px) {
+            .chat-box {
+                min-width: unset;
+                width: 95vw;
+                padding: 18px 8px;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="center-container">
+        <div class="logo-wrapper">
+            <img src="/static/sama_logo.png" alt="SAMA Logo" class="logo-img">
+        </div>
+        <h1>?What can I help with</h1>
+        <form class="chat-box" method="post">
+            <div class="input-row">
+                <input type="text" name="question" placeholder="...Ask anything" required value="{{question if question else ''}}">
+                <button type="submit">إرسال</button>
+            </div>
+        </form>
+        {% if result %}
+        <div class="result-section">
+            <h3>الإجابة:</h3>
+            <div>{{ result | safe }}</div>
+        </div>
+        {% endif %}
+        {% if sources %}
+        <div class="sources-section">
+            <h4>المصادر:</h4>
+            {% for src in sources %}
+            <div class="source-item">
+                <div class="source-title">{{ src.source }}</div>
+                <div>{{ src.content }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
