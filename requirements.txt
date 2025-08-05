@@ -7,3 +7,4 @@ langchain-openai
 chromadb
 jinja2
 PyPDF2
+pypdf
