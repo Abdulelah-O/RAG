@@ -37,25 +37,24 @@ text_splitter = RecursiveCharacterTextSplitter(
 docs = text_splitter.split_documents(raw_docs) # docs is a list of document chunks.
 
 # -- Embedding Vector Store (ChromaDB) --
-persist_directory = "chroma_db"
+
 embedding = OpenAIEmbeddings(
-    model = 'text-embedding-ada-002',
+    model = 'text-embedding-3-large',
     openai_api_key=os.getenv("OPENAI_API_KEY")
 )
 
 vectordb = Chroma.from_documents(
     docs,
     embedding=embedding,
-    persist_directory=persist_directory,
     collection_metadata={"hnsw:space": "cosine"}
 )
 
 # -- Prompt Engineering --
 prompt_template = """
 أنت مساعد خبير في أنظمة وقواعد البنك المركزي السعودي.
-استخدم فقط المقتطفات التالية للإجابة على السؤال. 
-إذا لم يكن الجواب موجودًا في السياق، قل "لا أعرف بناءً على البيانات المتوفرة". 
-اذكر المصدر.
+اقرأ المقتطفات التالية وافهم محتواها، ثم جاوب على السؤال بناءً على ما فهمته منها.
+إذا كانت المعلومة غير واضحة أو غير موجودة، قل "لا أعرف بناءً على البيانات المتوفرة".
+إذا كانت الإجابة مبنية على مقتطف معيّن، اذكر اسم الملف كمصدر إن أمكن.
 
 المقتطفات:
 {context}
@@ -91,10 +90,15 @@ async def ask_question(request: Request, question: str = Form(...)):
         return templates.TemplateResponse("index.html", {"request": request, "result": None, "question": question})
 
     result = qa_chain({"query": question})
+    print("\n\n=========== المقتطفات المسترجعة من ChromaDB ===========\n")
+    for i, doc in enumerate(result["source_documents"]):
+      print(f"[{i+1}] المصدر: {doc.metadata.get('source', 'Unknown')}")
+      print(doc.page_content)
+      print("\n-------------------------------------------\n")
     answer = result["result"]
     sources = []
     for doc in result["source_documents"]:
-        snippet = doc.page_content[:200]
+        snippet = doc.page_content[:400]
         src = doc.metadata.get("source", "Unknown")
         sources.append({"source": src, "content": snippet})
 
@@ -107,3 +111,4 @@ async def ask_question(request: Request, question: str = Form(...)):
             "question": question
         }
     )
+
