@@ -39,7 +39,7 @@ docs = text_splitter.split_documents(raw_docs) # docs is a list of document chun
 # -- Embedding Vector Store (ChromaDB) --
 
 embedding = OpenAIEmbeddings(
-    model = 'text-embedding-3-large',
+    model = 'text-embedding-ada-002',
     openai_api_key=os.getenv("OPENAI_API_KEY")
 )
 
